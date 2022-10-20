@@ -19,4 +19,4 @@ const store = createStore(reducer, applyMiddleware(sagaMiddleware))
 
 sagaMiddleware.run(rootSaga)
 
-export { store, reducers }
+export default store

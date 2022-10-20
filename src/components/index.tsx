@@ -1,3 +1,4 @@
 import Header from './Header'
+import ProgressBar from './Progress'
 
-export { Header }
+export { Header, ProgressBar }

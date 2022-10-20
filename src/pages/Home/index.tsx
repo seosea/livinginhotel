@@ -1,28 +1,27 @@
 import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
-import { View, ScrollView, Pressable } from 'react-native'
+import { ScrollView, StyleSheet } from 'react-native'
 
 // navigation
 import { useNavigation } from '@react-navigation/native'
-
-//redux
-import { getMainData } from '../../redux/reducers/main'
 
 //component
 import Banner from './components/Banner'
 import Promotion from './components/Promotion'
 import Catalog from './components/Catalog'
 
+//globals
+import colorSchema from '../../globals/colorSchema'
+
 const Home = (props: any) => {
   const navigation = useNavigation()
 
-  useEffect(() => {
-    props.getMainData()
-  }, [])
-
   {
     return (
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollViewContainer}
+        showsVerticalScrollIndicator={false}
+      >
         <Banner />
         <Promotion />
         <Catalog />
@@ -37,8 +36,12 @@ const mapStateToProps = (state: any) => ({
   data: state.appState.data
 })
 
-const mapDispatchToProps = (dispatch: any) => ({
-  getMainData: () => dispatch(getMainData())
-})
+const mapDispatchToProps = (dispatch: any) => ({})
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home)
+
+const styles = StyleSheet.create({
+  scrollViewContainer: {
+    backgroundColor: colorSchema.navy1
+  }
+})

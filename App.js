@@ -6,7 +6,9 @@ import MainStackNavigator from './src/utils/MainStackNavigator'
 
 //redux
 import { Provider } from 'react-redux'
-import { store } from './src/redux'
+import store from './src/redux'
+
+import { LoadingIndicator } from './src/system'
 
 class App extends React.Component {
   constructor(props: any) {
@@ -19,6 +21,7 @@ class App extends React.Component {
         <NavigationContainer>
           <MainStackNavigator />
         </NavigationContainer>
+        <LoadingIndicator />
       </Provider>
     )
   }

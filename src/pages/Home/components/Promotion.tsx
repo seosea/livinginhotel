@@ -6,7 +6,7 @@ import styleSchema from '../../../globals/styleSchema'
 
 //image
 import CouponImage from '../assets/img_coupon.png'
-import ArrowRightImage from '../../../assets/images/arrow/ic_arrow_w_16.png'
+import ArrowRightImage from '../../../assets/images/arrow/ic_arrow_right_w_16.png'
 
 const Promotion = (props: any) => {
   {

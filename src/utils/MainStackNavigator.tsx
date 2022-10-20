@@ -3,10 +3,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
-import { Home, Category, Alarm, MyPage } from '../pages'
-import { Header } from '../components'
+import { Home, Category, Alarm, MyPage, Splash } from '../pages'
 
-import { Image, StyleSheet } from 'react-native'
+import { Image, StyleSheet, StatusBar } from 'react-native'
 import colorSchema from '../globals/colorSchema'
 
 //image
@@ -20,6 +19,7 @@ import {
   CategoryOff,
   CategoryOn
 } from '../assets/images/footer'
+import { Header } from '../components'
 
 const MainStackNavigator = createNativeStackNavigator()
 const TabStackNavigator = createBottomTabNavigator()
@@ -37,7 +37,6 @@ function TabScreen() {
         name="Home"
         component={Home}
         options={{
-          headerShown: false,
           title: '홈',
           tabBarIcon: props => {
             if (props.focused) {
@@ -45,6 +44,9 @@ function TabScreen() {
             } else {
               return <Image style={styles.icon} source={HomeOff} />
             }
+          },
+          header: props => {
+            return <Header />
           }
         }}
       />
@@ -52,7 +54,6 @@ function TabScreen() {
         name="Category"
         component={Category}
         options={{
-          headerShown: false,
           title: '카테고리',
           tabBarIcon: props => {
             if (props.focused) {
@@ -60,14 +61,14 @@ function TabScreen() {
             } else {
               return <Image style={styles.icon} source={CategoryOff} />
             }
-          }
+          },
+          header: props => <Header />
         }}
       />
       <TabStackNavigator.Screen
         name="Alarm"
         component={Alarm}
         options={{
-          headerShown: false,
           title: '알림',
           tabBarIcon: props => {
             if (props.focused) {
@@ -75,14 +76,14 @@ function TabScreen() {
             } else {
               return <Image style={styles.icon} source={AlarmOff} />
             }
-          }
+          },
+          header: props => <Header />
         }}
       />
       <TabStackNavigator.Screen
         name="MyPage"
         component={MyPage}
         options={{
-          headerShown: false,
           title: '마이페이지',
 
           tabBarIcon: props => {
@@ -91,6 +92,9 @@ function TabScreen() {
             } else {
               return <Image style={styles.icon} source={ProfileOff} />
             }
+          },
+          header: props => {
+            return <Header />
           }
         }}
       />
@@ -101,8 +105,16 @@ function TabScreen() {
 const HomeStackNavigator = () => {
   return (
     <SafeAreaProvider>
-      <Header />
+      <StatusBar
+        backgroundColor={colorSchema.white}
+        barStyle={'dark-content'}
+      />
       <MainStackNavigator.Navigator>
+        <MainStackNavigator.Screen
+          name="Splash"
+          component={Splash}
+          options={{ headerShown: false }}
+        />
         <MainStackNavigator.Screen
           name="TabScreen"
           component={TabScreen}

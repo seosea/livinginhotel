@@ -10,15 +10,25 @@ import {
 } from 'react-native'
 
 import Carousel from 'react-native-snap-carousel'
+
+//globals
 import colorSchema from '../../../globals/colorSchema'
 import styleSchema from '../../../globals/styleSchema'
+import * as constants from '../../../globals/constants'
 
 //image
 import StarImage from '../assets/ic_star_12.png'
 import DiscountImage from '../assets/ic_discount_16.png'
+import ArrowRightImage from '../../../assets/images/arrow/ic_arrow_right_w_16.png'
+import ArrowLeftImage from '../../../assets/images/arrow/ic_arrow_left_w_16.png'
+import TimeSaleImage from '../assets/ic_timesale_12.png'
 
 // utils
 import { getPriceString } from '../../../utils/formatter'
+
+// time
+import moment from 'moment'
+import 'moment/locale/ko'
 
 const width = Dimensions.get('screen').width
 
@@ -43,9 +53,16 @@ const Catalog = props => {
   const onSelectCityPress = local => {
     setSelectedCity(local.city)
     setSelectedCityHotel(local.items)
-    console.log('carouselRef', carouselRef, carouselRef.current)
     carouselRef.current.snapToItem(0)
     setCurrentCarouselIndex(0)
+  }
+
+  const onPreviousCarouselPress = () => {
+    carouselRef.current.snapToPrev()
+  }
+
+  const onNextCarouselPress = () => {
+    carouselRef.current.snapToNext()
   }
 
   const renderLocalCityItem = ({ item, index }) => {
@@ -84,6 +101,35 @@ const Catalog = props => {
   }
 
   const renderLocalHotelItem = ({ item, index }) => {
+    let hasTimeSale = false
+    let hotelType = ''
+
+    if (item.timesale && item.timesale.length > 0) {
+      hasTimeSale = true
+
+      const now = new Date()
+      const end = new Date(item.timesale[0].end_at)
+
+      const diff = end - now
+
+      const diffDay = Math.floor(diff / (1000 * 60 * 60 * 24))
+      const diffHour = Math.floor((diff / (1000 * 60 * 60)) % 24)
+      const diffMin = Math.floor((diff / (1000 * 60)) % 60)
+      const diffSec = Math.floor((diff / 1000) % 60)
+      console.log(item.timesale[0].end_at, diffDay, diffHour, diffMin, diffSec)
+    }
+
+    switch (item.type) {
+      case constants.HOTEL_TYPE.HOTEL:
+        hotelType = '호텔'
+        break
+      case constants.HOTEL_TYPE.MINI_HOTEL:
+        hotelType = '미니 호텔'
+        break
+
+      default:
+        break
+    }
     return (
       <View
         style={{
@@ -145,6 +191,42 @@ const Catalog = props => {
           >
             {item.subway_station}
           </Text>
+          {hasTimeSale && (
+            <View
+              style={{
+                backgroundColor: colorSchema.green3,
+                height: 32,
+                width: width - 64,
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                zIndex: 9999,
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 12
+              }}
+            >
+              <Image
+                style={{
+                  width: 12,
+                  height: 12,
+                  resizeMode: 'contain',
+                  marginRight: 5
+                }}
+                source={TimeSaleImage}
+              />
+              <Text
+                style={{
+                  fontWeight: '700',
+                  fontSize: 12,
+                  color: colorSchema.white
+                }}
+              >
+                {item.timesale[0].remaining}
+              </Text>
+              <Text></Text>
+            </View>
+          )}
           <Image
             style={{
               width: width - 64,
@@ -154,21 +236,27 @@ const Catalog = props => {
             source={{ uri: item.image }}
           />
         </View>
-        <FlatList
-          horizontal={true}
-          data={item.tags}
-          extraData={props}
-          keyExtractor={(item, index) => index}
-          style={{ marginBottom: 12, backgroundColor: 'pink' }}
-          renderItem={({ item, index }) => {
+        <View
+          style={{
+            width: width - 64,
+            marginBottom: 12,
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            overflow: 'scroll'
+          }}
+        >
+          {item.tags.map((tag, index) => {
             return (
               <View
+                key={index}
                 style={{
                   paddingHorizontal: 12,
                   paddingVertical: 2,
                   borderRadius: 100,
                   borderWidth: 1,
-                  borderColor: colorSchema.gray4
+                  borderColor: colorSchema.gray4,
+                  marginRight: 4,
+                  marginBottom: 4
                 }}
               >
                 <Text
@@ -179,12 +267,12 @@ const Catalog = props => {
                     color: colorSchema.gray3
                   }}
                 >
-                  {item}
+                  {tag}
                 </Text>
               </View>
             )
-          }}
-        />
+          })}
+        </View>
         <Text
           style={{
             fontSize: 14,
@@ -196,7 +284,6 @@ const Catalog = props => {
         >
           {item.name}
         </Text>
-        {/* TODO: 미니호텔 exception */}
         <View
           style={{
             flexDirection: 'row',
@@ -204,11 +291,21 @@ const Catalog = props => {
             paddingVertical: 2
           }}
         >
-          <Image
-            style={{ width: 12, height: 12, resizeMode: 'contain' }}
-            source={require('../assets/ic_star_12.png')}
-          />
-          <Text>{`${item.star}성급`}</Text>
+          {item.star && (
+            <>
+              <Image
+                style={{ width: 12, height: 12, resizeMode: 'contain' }}
+                source={require('../assets/ic_star_12.png')}
+              />
+              <Text
+                style={{
+                  fontSize: 12,
+                  lineHeight: 20,
+                  color: colorSchema.navy2
+                }}
+              >{`${item.star}성급`}</Text>
+            </>
+          )}
           <View
             style={{
               height: 10,
@@ -217,7 +314,15 @@ const Catalog = props => {
               marginHorizontal: 2
             }}
           />
-          <Text>{item.type}</Text>
+          <Text
+            style={{
+              fontSize: 12,
+              lineHeight: 20,
+              color: colorSchema.navy2
+            }}
+          >
+            {hotelType}
+          </Text>
         </View>
 
         <View
@@ -227,8 +332,12 @@ const Catalog = props => {
             marginVertical: 10
           }}
         />
-        {item.price.is_price && (
-          <View>
+        {item.price.is_price ? (
+          <View
+            style={{
+              paddingBottom: styleSchema.marginDefault
+            }}
+          >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Text
                 style={{
@@ -274,31 +383,108 @@ const Catalog = props => {
                 </View>
               )}
             </View>
-            <View></View>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text
+                style={{
+                  fontWeight: '700',
+                  fontSize: 14,
+                  lineHeight: 28,
+                  color: colorSchema.red2,
+                  marginLeft: 4
+                }}
+              >{`${item.price.price[0].discount}%`}</Text>
+              <Text
+                style={{
+                  fontWeight: '700',
+                  fontSize: 24,
+                  lineHeight: 36,
+                  color: colorSchema.navy1,
+                  marginLeft: 4
+                }}
+              >
+                {`${getPriceString(item.price.price[0].sale_price)}`}
+              </Text>
+              <Text
+                style={{
+                  fontWeight: '700',
+                  fontSize: 14,
+                  lineHeight: 22,
+                  color: colorSchema.navy1,
+                  marginLeft: 2
+                }}
+              >
+                원~
+              </Text>
+            </View>
           </View>
-        )}
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text
+        ) : (
+          <View
             style={{
-              fontWeight: '700',
-              fontSize: 14,
-              lineHeight: 28,
-              color: colorSchema.red2,
-              marginLeft: 4
+              height: 70,
+              justifyContent: 'flex-end',
+              paddingBottom: 16
             }}
           >
-            {/* {`${item.price.price[0].min_night_discount}%`} */}
-          </Text>
-          <Text
-            style={{
-              fontWeight: '700',
-              fontSize: 14,
-              lineHeight: 28,
-              color: colorSchema.red2,
-              marginLeft: 4
-            }}
-          >{`${item.price.price[0].min_night_discount}%`}</Text>
-        </View>
+            <Text>상세페이지에서 가격 확인</Text>
+          </View>
+        )}
+      </View>
+    )
+  }
+
+  const renderCarouselNavigation = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginTop: 24
+        }}
+      >
+        <TouchableOpacity
+          onPress={onPreviousCarouselPress}
+          disabled={currentCarouselIndex === 0}
+          style={{
+            width: 32,
+            height: 32,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderColor: colorSchema.white,
+            borderRadius: 100,
+
+            opacity: currentCarouselIndex === 0 ? 0.5 : 1
+          }}
+        >
+          <Image
+            style={{ width: 16, height: 16, resizeMode: 'contain' }}
+            source={ArrowLeftImage}
+          />
+        </TouchableOpacity>
+        <Text style={{ color: colorSchema.white, marginHorizontal: 12 }}>{`${
+          currentCarouselIndex + 1
+        } / ${selectedCityHotel.length}`}</Text>
+
+        <TouchableOpacity
+          onPress={onNextCarouselPress}
+          disabled={currentCarouselIndex + 1 === selectedCityHotel.length}
+          style={{
+            width: 32,
+            height: 32,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderWidth: 1,
+            borderColor: colorSchema.white,
+            borderRadius: 100,
+            opacity:
+              currentCarouselIndex + 1 === selectedCityHotel.length ? 0.5 : 1
+          }}
+        >
+          <Image
+            style={{ width: 16, height: 16, resizeMode: 'contain' }}
+            source={ArrowRightImage}
+          />
+        </TouchableOpacity>
       </View>
     )
   }
@@ -320,7 +506,8 @@ const Catalog = props => {
             fontSize: 24,
             lineHeight: 36,
             color: colorSchema.white,
-            marginBottom: 32
+            marginBottom: 32,
+            fontFamily: constants.FONT_TYPE.PT_SERIF
           }}
         >
           Local Hotels
@@ -345,6 +532,7 @@ const Catalog = props => {
           onSnapToItem={index => setCurrentCarouselIndex(index)}
           ref={carouselRef}
         />
+        {renderCarouselNavigation()}
       </View>
     )
   }

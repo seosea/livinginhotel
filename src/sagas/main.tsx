@@ -19,15 +19,13 @@ import { GET_MAIN_DATA } from '../redux/actions/main'
 import { setAppState, saveAppData } from '../redux/reducers/appState'
 
 export function* getMainData() {
-  yield put(setAppState('START_GET_MAIN_DATA', null, true))
+  yield put(setAppState('START_GET_MAIN_DATA', null, false))
 
   try {
     const response = yield call(axios, {
       method: 'GET',
       url: `${URL.main.MAIN}`
     })
-
-    console.log('res', response)
 
     if (response.status === 200) {
       yield put(saveAppData('banners', response.data.banners))
